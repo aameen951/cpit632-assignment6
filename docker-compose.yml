@@ -1,52 +1,55 @@
-version: "3.3"
+version: '3.7'
 services:
-  product-vm:
-    build: ./product
-    ports:
-      - 5551:80
-
-  shipping-vm:
-    build: ./shipping
-    ports:
-      - 5552:80
-
   web-vm:
-    build: ./web
+    image: web-img
     ports:
-      - 5550:80
+      - 5550:5550
     depends_on:
       - product-vm
-      - shipping-vm
+      - ordering-vm
+      - best-selling-vm
+  product-vm:
+    image: product-img
+    ports:
+      - 5551:5551
     environment:
-      PRODUCT_PORT: 5551
-      SHIPPING_PORT: 5552
-
-#   db:
-#     image: mysql:5.7
-#     volumes:
-#       - db_data:/var/lib/mysql
-#     restart: always
-#     environment:
-#       MYSQL_ROOT_PASSWORD: somewordpress
-#       MYSQL_DATABASE: wordpress
-#       MYSQL_USER: wordpress
-#       MYSQL_PASSWORD: wordpress
-    
-#   wordpress:
-#     depends_on:
-#       - db
-#     image: wordpress:latest
-#     volumes:
-#       - wordpress_data:/var/www/html
-#     ports:
-#       - "8000:80"
-#     restart: always
-#     environment:
-#       APP_DB_HOST: db:3306
-#       APP_DB_USER: wordpress
-#       APP_DB_PASSWORD: wordpress
-#       APP_DB_NAME: wordpress
-
-# volumes:
-#   db_data: {}
-#   wordpress_data: {}
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USERNAME: username
+      DB_PASSWORD: password
+      DB_DATABASE: db_name
+    depends_on:
+      - db
+  ordering-vm:
+    image: ordering-img
+    ports:
+      - 5552:5552
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USERNAME: username
+      DB_PASSWORD: password
+      DB_DATABASE: db_name
+    depends_on:
+      - db
+  best-selling-vm:
+    image: best-selling-img
+    ports:
+      - 5553:5553
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USERNAME: username
+      DB_PASSWORD: password
+      DB_DATABASE: db_name
+    depends_on:
+      - db
+  db:
+    image: mariadb
+    ports:
+      - 3306:3306
+    environment:
+      MARIADB_ROOT_PASSWORD: password
+      MARIADB_DATABASE: db_name
+      MARIADB_USER: username
+      MARIADB_PASSWORD: password

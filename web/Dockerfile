@@ -1,8 +1,7 @@
 FROM node:14-alpine
 MAINTAINER Ameen Sayegh
 WORKDIR ~/app
-COPY ./package*.json .
-RUN npm install
+COPY ./package.json ./package-lock.json .
+RUN npm install --production
 COPY ./* .
-EXPOSE 80
-CMD ["node", "main.js"]
+CMD node main.js
