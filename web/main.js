@@ -4,8 +4,16 @@ const dns = require('dns');
 const app = express();
 
 const PORT = process.env.PORT || 5550;
+const PRODUCT_HOST = process.env.PRODUCT_HOST;
+const SHIPPING_HOST = process.env.SHIPPING_HOST;
+const BEST_SELLING_HOST = process.env.BEST_SELLING_HOST;
 const PRODUCT_PORT = process.env.PRODUCT_PORT;
 const SHIPPING_PORT = process.env.SHIPPING_PORT;
+const BEST_SELLING_PORT = process.env.BEST_SELLING_PORT;
+
+const PRODUCT_DOMAIN = `${PRODUCT_HOST}:${PRODUCT_PORT}`;
+const SHIPPING_DOMAIN = `${SHIPPING_HOST}:${SHIPPING_PORT}`;
+const BEST_SELLING_DOMAIN = `${BEST_SELLING_HOST}:${BEST_SELLING_PORT}`;
 
 const lib = `
   async function rq(method, path, data) {
@@ -63,16 +71,16 @@ app.get("/products", async (req, res, next) => {
           el.appendChild(td3);
           el.appendChild(td4);
           btn.onclick= async () => {
-            rq('DELETE', "http://localhost:5551/api/product/"+p.id);
+            rq('DELETE', "http://${PRODUCT_DOMAIN}/api/product/"+p.id);
             el.parentElement.removeChild(el);
           }
           btn2.onclick= async () => {
-            rq('POST', "http://localhost:5552/api/order", {product_id: p.id});
+            rq('POST', "http://${SHIPPING_DOMAIN}/api/order", {product_id: p.id});
           }
           products_el.appendChild(el);
         }
         async function new_product() {
-          const products = await rq('PUT', "http://localhost:5551/api/product", {"name":product_name_el.value});
+          const products = await rq('PUT', "http://${PRODUCT_DOMAIN}/api/product", {"name":product_name_el.value});
           for(let p of products) push_product(p);
           product_name_el.value = "";
         }
@@ -86,7 +94,7 @@ app.get("/products", async (req, res, next) => {
         <tr><th></th><th>#</th><th>Name</th><th>Order</th></tr>
       </table>
       <script>
-        rq('GET', 'http://localhost:5551/api/product').then(res => {
+        rq('GET', 'http://${PRODUCT_DOMAIN}/api/product').then(res => {
           for(let p of res) push_product(p);
         });
       </script>
@@ -125,7 +133,7 @@ app.get("/ordering", async (req, res, next) => {
 
           const btn = document.createElement('button');
           btn.onclick= async () => {
-            await rq('POST', 'http://localhost:5552/api/order/deliver/'+o.id);
+            await rq('POST', 'http://${SHIPPING_DOMAIN}/api/order/deliver/'+o.id);
             o.delivered = true;
             update_delivered(o, el);
           }
@@ -152,7 +160,7 @@ app.get("/ordering", async (req, res, next) => {
         <tr><th>#</th><th>Product Name</th><th>Delivered</th></tr>
       </table>
       <script>
-        rq('GET', 'http://localhost:5552/api/order').then(res => {
+        rq('GET', 'http://${SHIPPING_DOMAIN}/api/order').then(res => {
           for(let o of res) push_order(o);
         });
       </script>
@@ -191,7 +199,7 @@ app.get("/best-selling", async (req, res, next) => {
         <tr><th>#</th><th>Product Name</th><th>Sold</th></tr>
       </table>
       <script>
-      rq('GET', 'http://localhost:5553/api/best-selling').then(res => {
+      rq('GET', 'http://${BEST_SELLING_DOMAIN}/api/best-selling').then(res => {
         for(let o of res) push_row(o);
       });
       </script>

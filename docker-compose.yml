@@ -1,15 +1,22 @@
 version: '3.7'
 services:
   web-vm:
-    image: web-img
+    image: aameen951/cpit-632-asgn6-web-img
     ports:
       - 5550:5550
     depends_on:
       - product-vm
       - ordering-vm
       - best-selling-vm
+    environment:
+      PRODUCT_HOST: localhost
+      SHIPPING_HOST: localhost
+      BEST_SELLING_HOST: localhost
+      PRODUCT_PORT: 5551
+      SHIPPING_PORT: 5552
+      BEST_SELLING_PORT: 5553
   product-vm:
-    image: product-img
+    image: aameen951/cpit-632-asgn6-product-img
     ports:
       - 5551:5551
     environment:
@@ -21,7 +28,7 @@ services:
     depends_on:
       - db
   ordering-vm:
-    image: ordering-img
+    image: aameen951/cpit-632-asgn6-ordering-img
     ports:
       - 5552:5552
     environment:
@@ -33,7 +40,7 @@ services:
     depends_on:
       - db
   best-selling-vm:
-    image: best-selling-img
+    image: aameen951/cpit-632-asgn6-best-selling-img
     ports:
       - 5553:5553
     environment:
