@@ -209,4 +209,6 @@ app.get("/best-selling", async (req, res, next) => {
   next();
 });
 
-app.listen(PORT);
+app.listen(PORT, () => {
+  console.log(`Listening on port ${PORT}...`);
+});

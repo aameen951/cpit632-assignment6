@@ -3,27 +3,30 @@ const cors = require('cors');
 const db_client = require('mariadb');
 
 const app = express();
-app.use(cors());
+app.use(cors({origin: "*"}));
 app.use(express.json());
 
 const PORT = process.env.PORT || 5552;
 
-const db_pool = db_client.createPool({
-  host: process.env.DB_HOST || "localhost",
-  port: process.env.DB_PORT || 3306,
-  user: process.env.DB_USERNAME || "username",
-  password: process.env.DB_PASSWORD || "password",
-  database: process.env.DB_DATABASE || "db_name",
-});
-
 async function migrate(db){
-  await db.query("create or replace table orders (id BIGINT PRIMARY KEY AUTO_INCREMENT, product_id BIGINT, product_name VARCHAR(256), delivered BOOLEAN);");
+  await db.query("CREATE TABLE IF NOT EXISTS orders (id BIGINT PRIMARY KEY AUTO_INCREMENT, product_id BIGINT, product_name VARCHAR(256), delivered BOOLEAN);");
+}
+
+async function db_connect(){
+  const result = await db_client.createConnection({
+    host: process.env.DB_HOST || "localhost",
+    port: process.env.DB_PORT || 3306,
+    user: process.env.DB_USERNAME || "username",
+    password: process.env.DB_PASSWORD || "password",
+    database: process.env.DB_DATABASE || "db_name",
+  });
+  return result;
 }
 
 app.use(async (req, res, next) => {
-  req.db = await db_pool.getConnection();
+  req.db = await db_connect();
+  await migrate(req.db);
   next();
-  await req.db.release();
 });
 
 app.post("/api/order", async (req, res, next) => {
@@ -50,12 +53,10 @@ app.post("/api/order/deliver/:id", async (req, res, next) => {
   next();
 });
 
-async function main() {
-  const db = await db_pool.getConnection();
-  try {
-    await migrate(db);
-  } catch {}
-  db.release();
-  app.listen(PORT);
-}
-main();
+app.use(async (req, res, next) => {
+  await req.db.close();
+  next();
+});
+app.listen(PORT, () => {
+  console.log(`Listening on port ${PORT}...`);
+});
